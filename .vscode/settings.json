@@ -1,0 +1,10 @@
+{
+    "cmake.sourceDirectory": "${workspaceFolder}/Hw2/code_frame",
+    "C_Cpp.errorSquiggles": "Enabled",
+    "files.associations": {
+        "tuple": "cpp",
+        "array": "cpp",
+        "utility": "cpp",
+        "cmath": "cpp"
+    }
+}

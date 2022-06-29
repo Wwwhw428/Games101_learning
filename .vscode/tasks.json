@@ -1,0 +1,66 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Compile",
+            "type": "shell",
+            "windows": {
+                "command": "g++",
+                "args": [
+                    "-g",
+                    "\"${file}\"",
+                    "-fexec-charset=GB2312",
+                    "-o",
+                    "\"${fileDirname}\\${fileBasenameNoExtension}.exe\"",
+                    "-I",
+                    "C:/Program Files (x86)/Eigen3"
+                ]
+            },
+            "group": "build",
+            "presentation": {
+                "reveal": "silent",
+                "focus": false,
+                "echo": true,
+                "panel": "dedicated"
+            },
+            "problemMatcher": {
+                "owner": "cpp",
+                "fileLocation": [
+                    "relative",
+                    "${workspaceFolder}"
+                ],
+                "pattern": {
+                    "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+                    "file": 1,
+                    "line": 2,
+                    "column": 3,
+                    "severity": 4,
+                    "message": 5
+                }
+            }
+        },
+        {
+            "type": "cppbuild",
+            "label": "C/C++: g++.exe 生成活动文件",
+            "command": "C:\\Program Files\\mingw64\\bin\\g++.exe",
+            "args": [
+                "-fdiagnostics-color=always",
+                "-g",
+                "${file}",
+                "-o",
+                "${fileDirname}\\${fileBasenameNoExtension}.exe"
+            ],
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "detail": "调试器生成的任务。"
+        }
+    ]
+}
