@@ -42,8 +42,8 @@ Eigen::Matrix4f get_projection_matrix(float eye_fov, float aspect_ratio, float z
     Eigen::Matrix4f scale = Eigen::Matrix4f::Identity();
     Eigen::Matrix4f offset = Eigen::Matrix4f::Identity();
 
-    p2o << zNear, 0,0,0,
-        0,zFar,0,0,
+    p2o << zNear, 0, 0, 0,
+        0, zFar, 0, 0,
         0,0,zNear+zFar,-zNear*zFar,
         0,0,1,0;
     scale << 2/(r-l),0,0,0,
