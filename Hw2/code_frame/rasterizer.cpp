@@ -140,7 +140,15 @@ void rst::rasterizer::rasterize_triangle(const Triangle& t) {
     float min_y = std::min(v[0].y(), std::min(v[1].y(), v[2].y()));
     float max_y = std::max(v[0].y(), std::max(v[1].y(), v[2].y()));
 
-    bool MXAA = false;
+    bool MXAA = true;
+
+    float superSample[4][2] = {
+        {0.25, 0.25},
+        {0.75, 0.25},
+        {0.25, 0.75},
+        {0.75, 0.75}
+    };
+
     if(MXAA)
     {
         for (int x = min_x; x <= max_x; x++)
@@ -148,37 +156,57 @@ void rst::rasterizer::rasterize_triangle(const Triangle& t) {
             for (int y = min_y; y <= max_y; y++)
             {
                 // 记录像素内四个点有几个点在三角形内
-                int cound = 0;
+                int count = 0;
+                float minDepth = FLT_MAX;
                 for (int i = 0; i < 4; i++)
                 {
-                    
+                    if (insideTriangle(x + superSample[i][0], y + superSample[i][1], t.v))
+                    {
+                        auto twod_info = computeBarycentric2D(x, y, t.v);
+                        float alpha, beta, gamma;
+                        std::tie(alpha, beta, gamma) = twod_info;
+                        float w_reciprocal = 1.0/(alpha / v[0].w() + beta / v[1].w() + gamma / v[2].w());
+                        float z_interpolated = alpha * v[0].z() / v[0].w() + beta * v[1].z() / v[1].w() + gamma * v[2].z() / v[2].w();
+                        z_interpolated *= w_reciprocal;
+                        minDepth = std::min(minDepth, z_interpolated);
+                        count++;
+                    }
+                }
+                if (count && depth_buf[get_index(x, y)] > minDepth)
+                {
+                    Eigen::Vector3f point(x, y, minDepth);
+                    Eigen::Vector3f color = t.getColor() * count / 4.0;
+                    depth_buf[get_index(x, y)] = minDepth;
+                    set_pixel(point, color);
                 }
             }
         }
     }
-    for (int x = min_x; x <= max_x; x++)
+    else
     {
-        for (int y = min_y; y <= max_y; y++)
+        for (int x = min_x; x <= max_x; x++)
         {
-            if (insideTriangle(x, y, t.v))
+            for (int y = min_y; y <= max_y; y++)
             {
-                auto twod_info = computeBarycentric2D(x, y, t.v);
-                // float alpha, beta, gama;
-                // auto{alpha, beta, gamma} = computeBarycentric2D(x, y, t.v);
-                float alpha, beta, gamma;
-                std::tie(alpha, beta, gamma) = twod_info;
-                float w_reciprocal = 1.0/(alpha / v[0].w() + beta / v[1].w() + gamma / v[2].w());
-                float z_interpolated = alpha * v[0].z() / v[0].w() + beta * v[1].z() / v[1].w() + gamma * v[2].z() / v[2].w();
-                z_interpolated *= w_reciprocal;
-
-                if(depth_buf[get_index(x, y)] > z_interpolated)
+                if (insideTriangle(x, y, t.v))
                 {
-                    // set the current pixel (use the set_pixel function) to the color of the triangle (use getColor function) if it should be painted.
-                    Eigen::Vector3f point(x, y, z_interpolated);
-                    depth_buf[get_index(x, y)] = z_interpolated;
-                    set_pixel(point, t.getColor());
+                    auto twod_info = computeBarycentric2D(x, y, t.v);
+                    // float alpha, beta, gama;
+                    // auto{alpha, beta, gamma} = computeBarycentric2D(x, y, t.v);
+                    float alpha, beta, gamma;
+                    std::tie(alpha, beta, gamma) = twod_info;
+                    float w_reciprocal = 1.0/(alpha / v[0].w() + beta / v[1].w() + gamma / v[2].w());
+                    float z_interpolated = alpha * v[0].z() / v[0].w() + beta * v[1].z() / v[1].w() + gamma * v[2].z() / v[2].w();
+                    z_interpolated *= w_reciprocal;
+
+                    if(depth_buf[get_index(x, y)] > z_interpolated)
+                    {
+                        // set the current pixel (use the set_pixel function) to the color of the triangle (use getColor function) if it should be painted.
+                        Eigen::Vector3f point(x, y, z_interpolated);
+                        depth_buf[get_index(x, y)] = z_interpolated;
+                        set_pixel(point, t.getColor());
+                    }
                 }
-                
             }
         }
     }
